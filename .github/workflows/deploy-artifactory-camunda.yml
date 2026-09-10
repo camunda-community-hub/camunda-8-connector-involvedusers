@@ -1,0 +1,42 @@
+name: deploy-artifactory-camunda
+
+# This GitHub workflow is temporary, to deploy the Jar on Jfro Artifacty here
+# https://artifacts.camunda.com/ui/repos/tree/General/camunda-consulting/io/camunda/connector/calendar-advance-function/1.1.0/calendar-advance-function-1.1.0-with-dependencies.jar
+# When the project will be referenced on the Camunda-hub, it will be deploy on Maven
+
+on:
+  push:
+    paths:
+      - '.github/workflows/deploy-artifactory-camunda.yml'
+  release:
+    types: [published]
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: '23'
+          distribution: 'temurin'
+          cache: maven
+          # Writes a <server id="camunda-consulting"> entry into settings.xml whose
+          # username/password are resolved from these env var names at build time
+          # (matches the "camunda-consulting" repository id in this pom's own
+          # distributionManagement override).
+          server-id: camunda-consulting
+          server-username: ARTIFACTORY_USR
+          server-password: ARTIFACTORY_TOKEN
+
+      - name: Set version from release tag
+        if: github.event_name == 'release'
+        run: mvn -B versions:set -DnewVersion=${{ github.event.release.tag_name }} -DgenerateBackupPoms=false
+
+      - name: Deploy to Camunda Artifactory (camunda-consulting)
+        run: mvn -B -P camunda-consulting -DskipTests deploy
+        env:
+          ARTIFACTORY_USR: ${{ secrets.ARTIFACTORY_USR }}
+          ARTIFACTORY_TOKEN: ${{ secrets.ARTIFACTORY_TOKEN }}
