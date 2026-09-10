@@ -39,7 +39,7 @@
         <!-- connector SDK version 8.8.7 / 8.7.8 -->
         <version.connector>8.8.7</version.connector>
 
-        <version.spring-boot>3.4.4</version.spring-boot>
+        <version.spring-boot>4.1.1</version.spring-boot>
 
         <!-- external libraries -->
         <version.slf4j>2.0.18</version.slf4j>
