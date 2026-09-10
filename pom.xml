@@ -1,0 +1,260 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <name>InvolvedUser</name>
+    <description>Involved User Connector</description>
+    <groupId>io.camunda.connector</groupId>
+    <artifactId>camunda-8-connector-involvedusers</artifactId>
+    <packaging>jar</packaging>
+    <!-- 1.0.0 -->
+    <version>1.0.0</version>
+    <url>https://github.com/camunda-community-hub/camunda-8-connector-involvedusers</url>
+
+    <scm>
+        <url>https://github.com/camunda-community-hub/camunda-8-connector-involvedusers</url>
+        <connection>scm:git:git@github.com:camunda-community-hub/camunda-8-connector-involvedusers.git</connection>
+        <developerConnection>scm:git:git@github.com:camunda-community-hub/camunda-8-connector-involvedusers.git</developerConnection>
+        <tag>HEAD</tag>
+    </scm>
+    <!-- Push the library to Maven -->
+    <!-- Visit https://github.com/camunda-community-hub/community-action-maven-release -->
+    <!-- This parent defines the profiles/plugins the release action needs (community-action-maven-release,
+         camunda-repository, central-sonatype-publish, ...) and distributionManagement.
+         Spring Boot's own version management is imported as a BOM below instead of as <parent>,
+         since Maven only allows a single <parent>. -->
+    <parent>
+        <groupId>org.camunda.community</groupId>
+        <artifactId>community-hub-release-parent</artifactId>
+        <version>2.1.0</version>
+        <relativePath/>
+    </parent>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
+
+        <!-- connector SDK version -->
+        <!-- connector SDK version 8.8.7 / 8.7.8 -->
+        <version.connector>8.8.7</version.connector>
+
+        <version.spring-boot>3.4.4</version.spring-boot>
+
+        <!-- external libraries -->
+        <version.slf4j>2.0.18</version.slf4j>
+        <version.jackson>2.17.0</version.jackson>
+        <version.assertj>3.27.3</version.assertj>
+        <version.junit-jupiter>5.12.1</version.junit-jupiter>
+        <version.mockito>5.16.1</version.mockito>
+        <java.version>23</java.version>
+        <maven.compiler.source>23</maven.compiler.source>
+        <maven.compiler.target>23</maven.compiler.target>
+        <maven.compiler.release>23</maven.compiler.release>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>io.camunda.connector</groupId>
+            <artifactId>connector-core</artifactId>
+            <version>${version.connector}</version>
+            <!--<scope>provided</scope>  -->
+        </dependency>
+        <dependency>
+            <groupId>io.camunda.connector</groupId>
+            <artifactId>connector-runtime-core</artifactId>
+            <version>${version.connector}</version>
+        </dependency>
+
+
+        <dependency>
+            <groupId>io.camunda.connector</groupId>
+            <artifactId>element-template-generator-core</artifactId>
+            <version>${version.connector}</version>
+        </dependency>
+
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.module</groupId>
+            <artifactId>jackson-module-scala_2.13</artifactId>
+            <version>2.17.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>${version.slf4j}</version>
+        </dependency>
+
+
+        <!-- test dependencies -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>${version.junit-jupiter}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-junit-jupiter</artifactId>
+            <version>${version.mockito}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <version>${version.assertj}</version>
+            <scope>test</scope>
+        </dependency>
+
+
+        <!-- for testing connectors locally in bundle with runtime -->
+
+
+        <dependency>
+            <groupId>io.camunda.connector</groupId>
+            <artifactId>spring-boot-starter-camunda-connectors</artifactId>
+            <version>${version.connector}</version>
+            <!--            <scope>test</scope> -->
+        </dependency>
+
+        <!-- to generate the element-template -->
+
+        <dependency>
+            <groupId>io.camunda.community</groupId>
+            <artifactId>zeebe-cherry-runtime</artifactId>
+            <version>3.5.2</version>
+            <scope>test</scope>
+        </dependency>
+
+    </dependencies>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>${version.spring-boot}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>io.camunda</groupId>
+                <artifactId>camunda-bom</artifactId>
+                <version>8.8.0</version>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <!-- Overrides community-hub-release-parent's distributionManagement (which targets
+         camunda-bpm-community-extensions) to deploy to camunda-consulting instead. -->
+    <distributionManagement>
+        <repository>
+            <id>camunda-consulting</id>
+            <url>https://artifacts.camunda.com/artifactory/camunda-consulting/</url>
+        </repository>
+        <snapshotRepository>
+            <id>camunda-consulting-snapshots</id>
+            <url>https://artifacts.camunda.com/artifactory/camunda-consulting-snapshots/</url>
+        </snapshotRepository>
+    </distributionManagement>
+
+    <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+                <excludes>
+                    <exclude>banner.txt</exclude>
+                    <exclude>application.yaml</exclude>
+                    <exclude>application.yml</exclude>
+                </excludes>
+            </resource>
+
+        </resources>
+
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <shadedClassifierName>with-dependencies</shadedClassifierName>
+                            <shadedArtifactAttached>true</shadedArtifactAttached>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.5.2</version>
+            </plugin>
+            <!-- community-hub-release-parent skips this plugin by default (releases normally go
+                 through its camunda-repository/central-sonatype-publish profiles instead).
+                 Re-enabled here for the plain "deploy to camunda-consulting" path above. -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <configuration>
+                    <skip>false</skip>
+                </configuration>
+            </plugin>
+
+        </plugins>
+    </build>
+
+    <repositories>
+        <repository>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <id>connectors</id>
+            <name>Connectors Repository</name>
+            <url>https://artifacts.camunda.com/artifactory/connectors/</url>
+        </repository>
+
+        <repository>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+            <id>connectors-snapshots</id>
+            <name>Connectors Snapshot Repository</name>
+            <url>https://artifacts.camunda.com/artifactory/connectors-snapshots/</url>
+        </repository>
+    </repositories>
+
+    <pluginRepositories>
+        <pluginRepository>
+            <id>connectors</id>
+            <name>Connectors Repository</name>
+            <url>https://artifacts.camunda.com/artifactory/connectors/</url>
+        </pluginRepository>
+
+        <pluginRepository>
+            <id>connectors-snapshots</id>
+            <name>Connectors Snapshot Repository</name>
+            <url>https://artifacts.camunda.com/artifactory/connectors-snapshots/</url>
+        </pluginRepository>
+    </pluginRepositories>
+
+
+</project>

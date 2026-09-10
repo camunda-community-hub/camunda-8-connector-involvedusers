@@ -1,0 +1,146 @@
+{
+  "$schema": "https://unpkg.com/@camunda/zeebe-element-templates-json-schema/resources/schema.json",
+  "name": "Involved user function",
+  "id": "io.camunda.connector.involveduser.InvolvedUserFunction",
+  "description": "For each active user task of the current process instance (optionally filtered by task id), list the involved users: the assignee, the candidate users, and the members of the candidate groups.",
+  "documentationRef": "https://docs.camunda.io/docs/components/modeler/web-modeler/connectors/available-connectors/template/",
+  "icon": {
+    "contents": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0OCA0OCI+PGNpcmNsZSBjeD0iMjQiIGN5PSIxNiIgcj0iOCIgZmlsbD0iIzAwNzJDZSIvPjxwYXRoIGQ9Ik04IDQwYzAtOC44IDcuMi0xNiAxNi0xNnMxNiA3LjIgMTYgMTYiIGZpbGw9IiMwMDcyQ2UiLz48L3N2Zz4\u003d"
+  },
+  "category": {
+    "id": "connectors",
+    "name": "Connectors"
+  },
+  "appliesTo": [
+    "bpmn:Task"
+  ],
+  "elementType": {
+    "value": "bpmn:ServiceTask"
+  },
+  "groups": [
+    {
+      "id": "Input",
+      "label": "Input"
+    },
+    {
+      "id": "Output",
+      "label": "Output"
+    }
+  ],
+  "properties": [
+    {
+      "binding": {
+        "type": "zeebe:taskDefinition:type"
+      },
+      "type": "Hidden",
+      "value": "c-involveduser-function"
+    },
+    {
+      "binding": {
+        "key": "resultVariable",
+        "type": "zeebe:taskHeader"
+      },
+      "type": "Hidden",
+      "value": "result"
+    },
+    {
+      "id": "filterTask",
+      "label": "Filter Task Ids",
+      "description": "TaskElementId or List\u003cTaskElementId\u003e. Only compute involved users for these task ids (user task element id). Leave empty to process every active user task of the process instance.",
+      "type": "String",
+      "feel": "optional",
+      "binding": {
+        "name": "filterTask",
+        "type": "zeebe:input"
+      },
+      "group": "Input"
+    },
+    {
+      "id": "failIfError",
+      "label": "Fail when user or group are not found",
+      "description": "If true, the function fails when a candidate/assignee user, or a group, can\u0027t be found. If false, the user is skipped.",
+      "value": "true",
+      "type": "Dropdown",
+      "choices": [
+        {
+          "name": "Yes",
+          "value": "true"
+        },
+        {
+          "name": "No",
+          "value": "false"
+        }
+      ],
+      "binding": {
+        "name": "failIfError",
+        "type": "zeebe:input"
+      },
+      "group": "Input"
+    },
+    {
+      "id": "maxUsersReported",
+      "label": "Max users reported",
+      "description": "Maximum number of involved users reported per task.",
+      "value": "100",
+      "type": "Number",
+      "feel": "optional",
+      "binding": {
+        "name": "maxUsersReported",
+        "type": "zeebe:input"
+      },
+      "group": "Input"
+    },
+    {
+      "id": "addUsers",
+      "label": "Add users",
+      "description": "Add user in the involved list on each task. Input is a String of UserName, separate by comma, or a List of UserName (String)",
+      "type": "String",
+      "feel": "optional",
+      "binding": {
+        "name": "addUsers",
+        "type": "zeebe:input"
+      },
+      "group": "Input"
+    },
+    {
+      "id": "involvedUsers",
+      "label": "list of involved users",
+      "description": "list of User, all task included",
+      "type": "String",
+      "feel": "optional",
+      "binding": {
+        "source": "\u003d result.involvedUsers",
+        "type": "zeebe:output"
+      },
+      "constraints": {
+        "notEmpty": true
+      },
+      "group": "Output"
+    },
+    {
+      "id": "detailTaskInvolvedUsers",
+      "label": "Detail task involved users",
+      "description": "Map, keyed by task id, of the task information (taskName, dueDate, documentation) and the list of involved users (assignee, candidate users, members of candidate groups)",
+      "type": "String",
+      "feel": "optional",
+      "binding": {
+        "source": "\u003d result.detailTaskInvolvedUsers",
+        "type": "zeebe:output"
+      },
+      "constraints": {
+        "notEmpty": true
+      },
+      "group": "Output"
+    },
+    {
+      "label": "ControllerPage Expression",
+      "description": "Expression to define BPMN Errors to throw",
+      "type": "Hidden",
+      "value": "if is defined(error) then bpmnError(error.code, error.message) else null",
+      "binding": {
+        "key": "errorExpression",
+        "type": "zeebe:taskHeader"
+      }
+    }
+  ]
+}
