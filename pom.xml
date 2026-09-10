@@ -200,7 +200,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.5.2</version>
+                <version>3.6.0</version>
             </plugin>
             <!-- community-hub-release-parent skips this plugin by default (releases normally go
                  through its camunda-repository/central-sonatype-publish profiles instead).
