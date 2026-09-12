@@ -5,9 +5,6 @@ name: deploy-artifactory-camunda
 # When the project will be referenced on the Camunda-hub, it will be deploy on Maven
 
 on:
-  push:
-    paths:
-      - '.github/workflows/deploy-artifactory-camunda.yml'
   release:
     types: [published]
 

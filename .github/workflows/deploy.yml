@@ -1,8 +1,5 @@
 name: Deploy artifacts on Nexus
 on:
-  push:
-    paths:
-      - '.github/workflows/deploy.yml'
   release:
     types: [published]
 

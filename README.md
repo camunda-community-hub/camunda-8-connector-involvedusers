@@ -13,6 +13,53 @@ This connector collects the users involved in the active user tasks of the curre
 the task's assignee, its candidate users, and every member of its candidate groups - each deduplicated
 and enriched with the full user record (userId, name, email).
 
+## SaaS and OIDC
+
+When the cluster's identity is managed by an external OIDC provider (this is the case for most SaaS
+clusters, and for self-managed clusters configured with an enterprise identity provider), Camunda's
+native Users API is disabled: a lookup like `newUserGetRequest(userId)` fails with a `403 Forbidden`
+(`Users API is disabled because the application is configured in OIDC mode`). In that mode, user
+records simply aren't stored in Camunda anymore - they live in the external OIDC provider instead, and
+there is no Camunda REST endpoint to read them back.
+
+To keep working in that situation, the connector falls back to a "shadow user" whenever a user (or
+group member) can't be fetched and `failIfError` is `false` (the default):
+* `userId` / `username` - the raw id that was looked up (assignee, candidate user, or group member).
+* `email` - set to that same id when it looks like an email address (contains a `@`), which is the
+  common case for OIDC-backed clusters where the username *is* the email. Left `null` otherwise.
+* `name` - always `null` (there is no way to recover it once the Users API is disabled).
+
+If `failIfError` is set to `true`, the connector does not build a shadow user for a failed lookup: it
+throws instead, failing the job with the `CANT_FETCH_USER` (or `CANT_FETCH_GROUP`) BPMN error.
+
+## Get the result
+
+The connector fills two output variables:
+
+* `detailTaskInvolvedUsers` - a map with one entry per user task, keyed by the task's numeric task
+  key (`taskKey`), not by its BPMN element id or name: a multi-instance/"iterate" task creates one
+  user task instance per iteration, all sharing the same element id, so the task key is the only way
+  to keep every instance distinct. The task's element id and name are still available as fields inside
+  the entry. Each entry contains:
+  * `taskId`, `taskName`, `dueDate`, `creationDate`, `completionDate`, `taskKey` - the task's own data.
+  * `assigneeUser` - present only when the task has an assignee: the assignee's user record.
+  * `involvedUsers` - present only when the task has no assignee: the deduplicated list of user
+    records resolved from the task's candidate users and the members of its candidate groups.
+
+  A task is therefore reported with either `assigneeUser` (task already assigned - no need to look at
+  candidates) or `involvedUsers` (task still up for grabs), never both.
+
+* `involvedUsers` - the flat list of every user involved across *all* tasks (assignees and candidates
+  alike), deduplicated by username so a user appearing on several tasks is reported only once.
+
+Since `detailTaskInvolvedUsers` is keyed by task key rather than task name, use a FEEL expression like
+this one to collect, say, every distinct task name across all tasks:
+
+```
+string join(distinct values(get entries(detailTaskInvolvedUsers).value.taskName), ", ")
+```
+
+
 ## Use the connector
 
 Input:
