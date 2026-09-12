@@ -172,7 +172,6 @@
                 <directory>src/main/resources</directory>
                 <filtering>true</filtering>
                 <excludes>
-                    <exclude>banner.txt</exclude>
                     <exclude>application.yaml</exclude>
                     <exclude>application.yml</exclude>
                 </excludes>

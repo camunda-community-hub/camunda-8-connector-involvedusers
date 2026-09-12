@@ -391,7 +391,7 @@ public class RunnerParameter {
 
         oneParameter.put(CherryInput.PARAMETER_MAP_VISIBLE_IN_TEMPLATE, visibleInTemplate);
 
-        logger.info("getMap:{}", oneParameter);
+        logger.debug("getMap:{}", oneParameter);
 
         return oneParameter;
     }

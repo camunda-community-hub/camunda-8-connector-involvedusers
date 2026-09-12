@@ -4,6 +4,11 @@
 
 # camunda-8-connector-involvedusers
 
+![InvolvedUser.png](InvolvedUser.png)
+
+Windows messenger Icon by Hopstarter (Jojo Mendoza) on <a href="https://icon-icons.com/authors/40-hopstarter-jojo-mendoza">Icon-Icons.com</a>
+
+
 This connector collects the users involved in the active user tasks of the current process instance:
 the task's assignee, its candidate users, and every member of its candidate groups - each deduplicated
 and enriched with the full user record (userId, name, email).

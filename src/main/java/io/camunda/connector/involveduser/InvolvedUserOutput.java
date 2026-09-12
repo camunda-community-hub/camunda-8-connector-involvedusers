@@ -39,12 +39,12 @@ public class InvolvedUserOutput implements CherryOutput {
     public static final RunnerParameter parameterDetailTaskInvolvedUsers = new RunnerParameter(OUTPUT_DETAIL_TASK_INVOLVED_USERS, // name
             "Detail task involved users", // label
             Map.class, // class
-            RunnerParameter.Level.REQUIRED, "Map, keyed by task id, of the task information (taskName, dueDate, documentation) and the list of involved users (assignee, candidate users, members of candidate groups)");
+            RunnerParameter.Level.OPTIONAL, "Map, keyed by task id, of the task information (taskName, dueDate, documentation) and the list of involved users (assignee, candidate users, members of candidate groups)");
 
     public static final RunnerParameter parameterInvolvedUsers = new RunnerParameter(OUTPUT_INVOLVED_USERS, // name
             "list of involved users", // label
             List.class, // class
-            RunnerParameter.Level.REQUIRED, "list of User, all task included");
+            RunnerParameter.Level.OPTIONAL, "list of User, all task included");
 
     public static final List<RunnerParameter> allParameters = List.of(parameterInvolvedUsers,parameterDetailTaskInvolvedUsers);
 
@@ -56,7 +56,7 @@ public class InvolvedUserOutput implements CherryOutput {
     public static final String FIELD_COMPLETION_DATE = "completionDate";
     public static final String FIELD_TASK_KEY = "taskKey";
     public static final String FIELD_ASSIGNEE_USER = "assigneeUser";
-    public static final String FIELD_CANDIDATE_USERS = "candidateUsers";
+    public static final String FIELD_INVOLVED_USERS = "candidateUsers";
 
     /**
      * Map<taskId, TaskInvolvedUsers>
@@ -88,7 +88,7 @@ public class InvolvedUserOutput implements CherryOutput {
             taskRecord.put(FIELD_ASSIGNEE_USER, assignee);
         }
         if (involvedUsersList != null) {
-            taskRecord.put(FIELD_CANDIDATE_USERS, involvedUsersList);
+            taskRecord.put(FIELD_INVOLVED_USERS, involvedUsersList);
         }
 
 
