@@ -1,19 +1,18 @@
-# Configuration for running connectors in bundle with connector-runtime
+# Configuration for running connectors in bundle with connector-runtime.
+#
+# This file holds ONLY settings shared by every profile. camunda.client.mode and any
+# grpc-address/rest-address MUST NOT be set here: CamundaClientPropertiesPostProcessor
+# derives the real SaaS endpoint from camunda.client.cloud.* via a low-priority internal
+# property source, but only when no higher-priority source (this file included) already
+# defines grpc-address/rest-address - so any address set here would leak into every
+# profile, including "py" (SaaS), and silently override the SaaS-derived endpoint.
+# See application-local.yaml (self-managed, no profile) and application-py.yaml (SaaS).
+spring:
+  profiles:
+    default: local
 
-# Cloud connection
-# zeebe.client.cloud:
-#    region=bru-2
-#    clusterId=xxx
-#    clientId=xxx
-#    clientSecret=xxx
-
-# ------------------------------------ 8.8
 camunda:
   client:
-    mode: self-managed
-    prefer-rest-over-grpc: false
-    grpc-address: http://localhost:26500
-    rest-address: http://localhost:8080
     request-timeout: PT25S
     execution-threads: 32
 
@@ -22,18 +21,17 @@ camunda:
         max-jobs-active: 32
         stream-enabled: true
 
-    auth:
-      method: none
-
-
     operate:
       enabled: false
     tasklist:
       enabled: false
-
 
 # Don't run the connection to Operate (not an inbound connection)
 camunda.connector.polling.enabled: false
 camunda.connector.webhook.enabled: false
 spring.main.web-application-type: none
 operate.client.enabled: false
+
+# Silences "a prefix must be configured to avoid breaking changes in the future" -
+# only env vars starting with SECRET_ are exposed as connector secrets.
+camunda.connector.secretprovider.environment.prefix: "SECRET_"

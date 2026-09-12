@@ -1,12 +1,13 @@
 package io.camunda.connector.involveduser;
 
 import io.camunda.client.CamundaClient;
+import io.camunda.client.api.command.ClientHttpException;
 import io.camunda.client.api.search.enums.UserTaskState;
 import io.camunda.client.api.search.response.GroupUser;
 import io.camunda.client.api.search.response.SearchResponse;
 import io.camunda.client.api.search.response.User;
-import io.camunda.client.impl.search.response.UserImpl;
 import io.camunda.client.api.search.response.UserTask;
+import io.camunda.client.impl.search.response.UserImpl;
 import io.camunda.connector.api.annotation.OutboundConnector;
 import io.camunda.connector.api.error.ConnectorException;
 import io.camunda.connector.api.outbound.OutboundConnectorContext;
@@ -97,7 +98,6 @@ public class InvolvedUserFunction implements OutboundConnectorFunction, CherryCo
 
             List<String> filterTaskId = getInputFilterTask(involvedUserInput);
             List<User> addUsersAllTasks = getInputAddUser( involvedUserInput, cacheUsers);
-
 
 
             // 1) search every active (CREATED) user task of this process instance
@@ -265,18 +265,29 @@ public class InvolvedUserFunction implements OutboundConnectorFunction, CherryCo
             cacheUsers.put(userId, user);
             return user;
         } catch (Exception e) {
+
+            Integer httpCode = e instanceof ClientHttpException clientHttpException ? clientHttpException.code() : null;
+            if (httpCode !=null && httpCode.intValue() == 403) {
+                // SaaS or OIDC env, it's expected to not be allow to get the user details
+                logger.info("Code 403 on FetchUser: OIDC (SaaS or other) Can't fetch user [{}] : {}, so create a shadow user", userId);
+                return getShadowUser(userId, cacheUsers);
+            }
+
             if (failIfError) {
                 logger.error("Can't fetch user [{}] : {}", userId, e.getMessage());
                 throw new ConnectorException(InvolvedUserError.CANT_FETCH_USER, "UserId[" + userId + "] errors :" + e.getMessage());
             }
             logger.info("Can't fetch user [{}] : {}, so create a shadow user", userId, e.getMessage());
-            String shadowEmail = userId.contains("@") ? userId : null;
-            User shadowUser = new UserImpl(userId, null, shadowEmail);
-            cacheUsers.put(userId, shadowUser);
-            return shadowUser;
+            return getShadowUser(userId, cacheUsers);
         }
     }
 
+    private User getShadowUser(String userId, Map<String, User> cacheUsers) {
+        String shadowEmail = userId.contains("@") ? userId : null;
+        User shadowUser = new UserImpl(userId, null, shadowEmail);
+        cacheUsers.put(userId, shadowUser);
+        return shadowUser;
+    }
 
     private List<String> getInputFilterTask(InvolvedUserInput involvedUserInput) {
         List<String> filterTaskId = new ArrayList<>();
@@ -295,7 +306,6 @@ public class InvolvedUserFunction implements OutboundConnectorFunction, CherryCo
 
         return filterTaskId;
     }
-
 
 
     private List<User> getInputAddUser(InvolvedUserInput involvedUserInput, Map<String, User> cacheUsers) throws
