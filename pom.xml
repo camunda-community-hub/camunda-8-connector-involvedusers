@@ -9,8 +9,8 @@
     <packaging>jar</packaging>
     <!-- 1.0.0 -->
     <!-- 1.0.1 Manage SaaS user fetch -->
-    <!-- 1.1.0 Change artefact id to connector-involvedusers -->
-    <version>1.1.0</version>
+    <!-- 1.0.2 Change artefact id to connector-involvedusers -->
+    <version>1.0.2</version>
     <url>https://github.com/camunda-community-hub/camunda-8-connector-involvedusers</url>
 
     <scm>
