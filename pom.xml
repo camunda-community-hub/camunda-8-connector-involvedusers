@@ -4,8 +4,8 @@
 
     <name>InvolvedUser</name>
     <description>Involved User Connector</description>
-    <groupId>org.camunda.connector</groupId>
-    <artifactId>connector-involved-users</artifactId>
+    <groupId>io.camunda.connector</groupId>
+    <artifactId>connector-involvedusers</artifactId>
     <packaging>jar</packaging>
     <!-- 1.0.0 -->
     <!-- 1.0.1 Manage SaaS user fetch -->
@@ -30,7 +30,7 @@
         <groupId>org.camunda.community</groupId>
         <artifactId>community-hub-release-parent</artifactId>
         <version>2.1.0</version>
-        <relativePath/>
+        <relativePath />
     </parent>
 
     <properties>
