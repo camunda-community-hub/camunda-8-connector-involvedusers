@@ -1,4 +1,4 @@
-package io.camunda.connector.involveduser;
+package org.camunda.connector.involveduser;
 
 import io.camunda.client.CamundaClient;
 import io.camunda.client.api.command.ClientHttpException;
@@ -12,8 +12,8 @@ import io.camunda.connector.api.annotation.OutboundConnector;
 import io.camunda.connector.api.error.ConnectorException;
 import io.camunda.connector.api.outbound.OutboundConnectorContext;
 import io.camunda.connector.api.outbound.OutboundConnectorFunction;
-import io.camunda.connector.cherrytemplate.CherryConnector;
-import io.camunda.connector.involveduser.toolbox.InvolvedUserError;
+import org.camunda.connector.cherrytemplate.CherryConnector;
+import org.camunda.connector.involveduser.toolbox.InvolvedUserError;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.lang.Nullable;

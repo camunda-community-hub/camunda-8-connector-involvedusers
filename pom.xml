@@ -4,13 +4,14 @@
 
     <name>InvolvedUser</name>
     <description>Involved User Connector</description>
-    <groupId>io.camunda.connector</groupId>
-    <artifactId>connector-involvedusers</artifactId>
+    <groupId>org.camunda.connector</groupId>
+    <artifactId>connector-involved-users</artifactId>
     <packaging>jar</packaging>
     <!-- 1.0.0 -->
     <!-- 1.0.1 Manage SaaS user fetch -->
     <!-- 1.0.2 Change artefact id to connector-involvedusers -->
-    <version>1.0.2</version>
+    <!-- 1.0.3 Move to org.camunda.connector -->
+    <version>1.0.3</version>
     <url>https://github.com/camunda-community-hub/camunda-8-connector-involvedusers</url>
 
     <scm>

@@ -1,4 +1,4 @@
-package io.camunda.connector.involveduser.toolbox;
+package org.camunda.connector.involveduser.toolbox;
 
 public class InvolvedUserError {
 

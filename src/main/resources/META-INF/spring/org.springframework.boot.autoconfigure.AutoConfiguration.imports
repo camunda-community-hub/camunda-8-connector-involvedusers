@@ -1,1 +1,1 @@
-io.camunda.connector.involveduser.InvolvedUserFunctionAutoConfiguration
+org.camunda.connector.involveduser.InvolvedUserFunctionAutoConfiguration

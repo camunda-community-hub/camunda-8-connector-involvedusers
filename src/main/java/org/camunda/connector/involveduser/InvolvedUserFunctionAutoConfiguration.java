@@ -1,4 +1,4 @@
-package io.camunda.connector.involveduser;
+package org.camunda.connector.involveduser;
 
 import io.camunda.client.CamundaClient;
 import org.springframework.boot.autoconfigure.AutoConfiguration;

@@ -1,9 +1,9 @@
-package io.camunda.connector.involveduser;
+package org.camunda.connector.involveduser;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import io.camunda.connector.cherrytemplate.CherryInput;
-import io.camunda.connector.cherrytemplate.RunnerParameter;
-import io.camunda.connector.involveduser.toolbox.ParameterToolbox;
+import org.camunda.connector.cherrytemplate.CherryInput;
+import org.camunda.connector.cherrytemplate.RunnerParameter;
+import org.camunda.connector.involveduser.toolbox.ParameterToolbox;
 
 import java.util.List;
 import java.util.Map;

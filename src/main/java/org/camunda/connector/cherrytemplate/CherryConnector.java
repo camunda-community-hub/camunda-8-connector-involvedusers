@@ -1,4 +1,4 @@
-package io.camunda.connector.cherrytemplate;
+package org.camunda.connector.cherrytemplate;
 
 
 /* ******************************************************************** */

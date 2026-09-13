@@ -5,7 +5,7 @@
 /*  Use this interface to implement the Input parameter.                */
 /* then the Cherry template will be able to read the Input information  */
 /* ******************************************************************** */
-package io.camunda.connector.cherrytemplate;
+package org.camunda.connector.cherrytemplate;
 
 import java.util.List;
 import java.util.Map;

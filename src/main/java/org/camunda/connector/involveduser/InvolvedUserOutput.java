@@ -1,10 +1,10 @@
-package io.camunda.connector.involveduser;
+package org.camunda.connector.involveduser;
 
 import io.camunda.client.api.search.response.User;
 import io.camunda.client.api.search.response.UserTask;
-import io.camunda.connector.cherrytemplate.CherryOutput;
-import io.camunda.connector.cherrytemplate.RunnerParameter;
-import io.camunda.connector.involveduser.toolbox.ParameterToolbox;
+import org.camunda.connector.cherrytemplate.CherryOutput;
+import org.camunda.connector.cherrytemplate.RunnerParameter;
+import org.camunda.connector.involveduser.toolbox.ParameterToolbox;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

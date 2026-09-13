@@ -1,7 +1,7 @@
-package io.camunda.connector.involveduser;
+package org.camunda.connector.involveduser;
 
 import io.camunda.cherry.definition.connector.SdkRunnerCherryConnector;
-import io.camunda.connector.cherrytemplate.RunnerParameter;
+import org.camunda.connector.cherrytemplate.RunnerParameter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

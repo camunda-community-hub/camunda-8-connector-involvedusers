@@ -4,7 +4,7 @@
 /*                                                                      */
 /*  Define a parameters (Worker or Connector)                           */
 /* ******************************************************************** */
-package io.camunda.connector.cherrytemplate;
+package org.camunda.connector.cherrytemplate;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -1,6 +1,6 @@
-package io.camunda.connector.involveduser.toolbox;
+package org.camunda.connector.involveduser.toolbox;
 
-import io.camunda.connector.cherrytemplate.RunnerParameter;
+import org.camunda.connector.cherrytemplate.RunnerParameter;
 
 import java.util.List;
 import java.util.Map;

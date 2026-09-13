@@ -1,4 +1,4 @@
-package io.camunda.connector.involveduser;
+package org.camunda.connector.involveduser;
 
 import io.camunda.cherry.definition.RunnerDecorationTemplate;
 import org.slf4j.Logger;

@@ -1,4 +1,4 @@
-package io.camunda.connector.cherrytemplate;
+package org.camunda.connector.cherrytemplate;
 
 import java.util.List;
 import java.util.Map;
