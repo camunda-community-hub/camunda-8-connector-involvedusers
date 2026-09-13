@@ -4,8 +4,8 @@
 
     <name>InvolvedUser</name>
     <description>Involved User Connector</description>
-    <groupId>io.camunda.connector</groupId>
-    <artifactId>connector-involvedusers</artifactId>
+    <groupId>org.camunda.connector</groupId>
+    <artifactId>connector-involved-users</artifactId>
     <packaging>jar</packaging>
     <!-- 1.0.0 -->
     <!-- 1.0.1 Manage SaaS user fetch -->
