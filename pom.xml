@@ -155,19 +155,6 @@
         </dependencies>
     </dependencyManagement>
 
-    <!-- Overrides community-hub-release-parent's distributionManagement (which targets
-         camunda-bpm-community-extensions) to deploy to camunda-consulting instead. -->
-    <distributionManagement>
-        <repository>
-            <id>camunda-consulting</id>
-            <url>https://artifacts.camunda.com/artifactory/camunda-consulting/</url>
-        </repository>
-        <snapshotRepository>
-            <id>camunda-consulting-snapshots</id>
-            <url>https://artifacts.camunda.com/artifactory/camunda-consulting-snapshots/</url>
-        </snapshotRepository>
-    </distributionManagement>
-
     <build>
         <resources>
             <resource>
@@ -203,17 +190,6 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.5.2</version>
             </plugin>
-            <!-- community-hub-release-parent skips this plugin by default (releases normally go
-                 through its camunda-repository/central-sonatype-publish profiles instead).
-                 Re-enabled here for the plain "deploy to camunda-consulting" path above. -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-deploy-plugin</artifactId>
-                <configuration>
-                    <skip>false</skip>
-                </configuration>
-            </plugin>
-
         </plugins>
     </build>
 
@@ -257,5 +233,42 @@
         </pluginRepository>
     </pluginRepositories>
 
+    <profiles>
+        <!-- Activated explicitly via "mvn -P camunda-consulting deploy" (see
+             deploy-artifactory-camunda.yml). Overrides community-hub-release-parent's
+             distributionManagement (which targets Sonatype Central Portal) to deploy to
+             camunda-consulting instead. Kept profile-scoped, rather than unconditional, so that
+             deploy.yml's own community-action-maven-release (Sonatype/Nexus release) - which runs a
+             plain "mvn deploy" with no "-P camunda-consulting" - keeps using the parent's real
+             Sonatype distributionManagement instead of being hijacked into deploying (and failing
+             with 401, since that job has no Artifactory credentials) to camunda-consulting. -->
+        <profile>
+            <id>camunda-consulting</id>
+            <distributionManagement>
+                <repository>
+                    <id>camunda-consulting</id>
+                    <url>https://artifacts.camunda.com/artifactory/camunda-consulting/</url>
+                </repository>
+                <snapshotRepository>
+                    <id>camunda-consulting-snapshots</id>
+                    <url>https://artifacts.camunda.com/artifactory/camunda-consulting-snapshots/</url>
+                </snapshotRepository>
+            </distributionManagement>
+            <build>
+                <plugins>
+                    <!-- community-hub-release-parent skips this plugin by default (releases normally
+                         go through its camunda-repository/central-sonatype-publish profiles instead).
+                         Re-enabled here for this profile's plain "deploy to camunda-consulting" path. -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-deploy-plugin</artifactId>
+                        <configuration>
+                            <skip>false</skip>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 
 </project>
