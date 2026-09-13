@@ -1,5 +1,4 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <name>InvolvedUser</name>
@@ -10,7 +9,7 @@
     <!-- 1.0.0 -->
     <!-- 1.0.1 Manage SaaS user fetch -->
     <!-- 1.0.2 Change artefact id to connector-involvedusers -->
-    <version>1.0.2.b</version>
+    <version>1.0.3.b-SNAPSHOT</version>
     <url>https://github.com/camunda-community-hub/camunda-8-connector-involvedusers</url>
 
     <scm>
@@ -29,7 +28,7 @@
         <groupId>org.camunda.community</groupId>
         <artifactId>community-hub-release-parent</artifactId>
         <version>2.1.0</version>
-        <relativePath/>
+        <relativePath />
     </parent>
 
     <properties>
