@@ -59,6 +59,49 @@ this one to collect, say, every distinct task name across all tasks:
 string join(distinct values(get entries(detailTaskInvolvedUsers).value.taskName), ", ")
 ```
 
+## How to collect users
+
+Each active user task falls into exactly one of three cases, decided by the task's own `assignee`,
+`candidateUsers` and `candidateGroups` fields. `includeUsers`, `includeGroups`, `excludeUsers` and
+`excludeGroups` are four *connector-level* inputs (not read from the task) that let you always add or
+remove specific people/groups on top of whatever the task itself defines - but, as detailed below, they
+don't apply the same way in every case.
+
+### Task has an assignee
+
+The result is exactly:
+* the assignee, and
+* `includeUsers`, and
+* every member of `includeGroups`.
+
+The task's own `candidateUsers`/`candidateGroups` are ignored entirely - once a task is assigned, there
+is no "candidate" left to consider. `excludeUsers`/`excludeGroups` and `maxUsersReported` have **no
+effect** in this case: the include lists are meant to always add these people regardless of the task,
+so there is nothing to cap or filter here.
+
+### Task has no assignee, but candidateUsers and/or candidateGroups
+
+The result is built as:
+1. Start from the task's `candidateUsers`.
+2. Add every member of `(candidateGroups ∪ includeGroups) − excludeGroups` - i.e. the task's own
+   candidate groups plus `includeGroups`, minus any group named in `excludeGroups` (a group listed in
+   both `includeGroups` and `excludeGroups` is excluded).
+3. Truncate the set to the first `maxUsersReported` entries (insertion order).
+4. Add `includeUsers` back in - this happens *after* the truncation, so an explicitly included user is
+   never dropped by the size cap.
+5. Remove `excludeUsers` - this happens last, so a user listed in both `includeUsers` and `excludeUsers`
+   ends up excluded: explicit exclusion always wins.
+
+### Task has no assignee, no candidateUsers or candidateGroups ("everybody")
+
+With nothing on the task to go on, every user in the organization is a candidate (fetched up to
+`maxUsersReported`, applied while searching). From that full list:
+* every member of `excludeGroups` is removed, then
+* every user in `excludeUsers` is removed.
+
+`includeUsers`/`includeGroups` have no effect here either - since everyone is already included, adding
+more people to the set changes nothing.
+
 
 ## Use the connector
 
@@ -96,13 +139,24 @@ For each active user task of the current process instance (optionally filtered b
 
 ## Inputs
 | Name             | Description                           | Class             | Level    |
-|------------------|---------------------------------------|-------------------|----------|
+|------------------|----------------------------------------|-------------------|----------|
 | filterTask       | Filter Task Ids                       | java.lang.Object  | OPTIONAL |
 | failIfError      | Fail when user or group are not found | java.lang.Boolean | OPTIONAL |
 | maxUsersReported | Max users reported                    | java.lang.Integer | OPTIONAL |
-| addUsers         | Add users                             | java.lang.Object  | OPTIONAL |
+| includeUsers     | Include users                         | java.lang.Object  | OPTIONAL |
+| includeGroups    | Include groups                        | java.lang.Object  | OPTIONAL |
+| excludeGroups    | Exclude groups                        | java.lang.Object  | OPTIONAL |
+| excludeUsers     | Exclude users                         | java.lang.Object  | OPTIONAL |
 
-
+Includes or exclude groups may be
+* String: value separate by comma
+```
+Customer, Supervisor, Presale
+```
+a List of String  in FEEL
+```
+["Customer", "Supervisor", "Presale" ]
+```
 
 ## Outputs
 | Name                    | Description                | Class          | Level    |

@@ -1,7 +1,7 @@
 {
   "$schema": "https://unpkg.com/@camunda/zeebe-element-templates-json-schema/resources/schema.json",
   "name": "Involved user function",
-  "id": "io.camunda.connector.involveduser.InvolvedUserFunction",
+  "id": "org.camunda.connector.involveduser.InvolvedUserFunction",
   "description": "For each active user task of the current process instance (optionally filtered by task id), list the involved users: the assignee, the candidate users, and the members of the candidate groups.",
   "documentationRef": "https://docs.camunda.io/docs/components/modeler/web-modeler/connectors/available-connectors/template/",
   "icon": {
@@ -91,13 +91,49 @@
       "group": "Input"
     },
     {
-      "id": "addUsers",
-      "label": "Add users",
+      "id": "includeUsers",
+      "label": "Include users",
       "description": "Add user in the involved list on each task. Input is a String of UserName, separate by comma, or a List of UserName (String)",
       "type": "String",
       "feel": "optional",
       "binding": {
-        "name": "addUsers",
+        "name": "includeUsers",
+        "type": "zeebe:input"
+      },
+      "group": "Input"
+    },
+    {
+      "id": "excludeUsers",
+      "label": "Exclude users",
+      "description": "Users to ignore when computing the involved users (assignee, candidate users, members of candidate groups). Input is a String of UserName, separate by comma, or a List of UserName (String)",
+      "type": "String",
+      "feel": "optional",
+      "binding": {
+        "name": "excludeUsers",
+        "type": "zeebe:input"
+      },
+      "group": "Input"
+    },
+    {
+      "id": "includeGroups",
+      "label": "Include groups",
+      "description": "Add every member of these groups in the involved list on each task. Input is a String of GroupId, separate by comma, or a List of GroupId (String)",
+      "type": "String",
+      "feel": "optional",
+      "binding": {
+        "name": "includeGroups",
+        "type": "zeebe:input"
+      },
+      "group": "Input"
+    },
+    {
+      "id": "excludeGroups",
+      "label": "Exclude groups",
+      "description": "Candidate groups to ignore when computing the involved users. Input is a String of GroupId, separate by comma, or a List of GroupId (String)",
+      "type": "String",
+      "feel": "optional",
+      "binding": {
+        "name": "excludeGroups",
         "type": "zeebe:input"
       },
       "group": "Input"

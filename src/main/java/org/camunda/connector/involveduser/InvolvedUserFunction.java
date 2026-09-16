@@ -29,7 +29,10 @@ import java.util.stream.Collectors;
  */
 @OutboundConnector(name = "InvolvedUserFunction", inputVariables = {
         InvolvedUserInput.FILTER_TASK,
-        InvolvedUserInput.ADD_USERS,
+        InvolvedUserInput.INCLUDE_USERS,
+        InvolvedUserInput.INCLUDE_GROUPS,
+        InvolvedUserInput.EXCLUDE_GROUPS,
+        InvolvedUserInput.EXCLUDE_USERS,
         InvolvedUserInput.MAX_USERS_REPORTED,
         InvolvedUserInput.FAIL_IF_ERROR,
 }, type = "c-involveduser-function")
@@ -84,7 +87,6 @@ public class InvolvedUserFunction implements OutboundConnectorFunction, CherryCo
         }
 
 
-
         long beginTime = System.currentTimeMillis();
         InvolvedUserOutput output = new InvolvedUserOutput();
 
@@ -93,12 +95,20 @@ public class InvolvedUserFunction implements OutboundConnectorFunction, CherryCo
             Map<String, User> cacheUsers = new HashMap<>();
             // cache group -> members, a group used by several tasks should be resolved only once
             Map<String, List<String>> groupMembersCache = new HashMap<>();
-            List<String> listAllUsersCache = new ArrayList<>();
+            List<String> listAllUsersNameCache = new ArrayList<>();
 
 
             List<String> filterTaskId = getInputFilterTask(involvedUserInput);
-            List<User> addUsersAllTasks = getInputAddUser( involvedUserInput, cacheUsers);
-
+            List<String> includeUsers = getListOfString(involvedUserInput.includeUsers);
+            List<String> excludeUsers = getListOfString(involvedUserInput.excludeUsers);
+            List<String> includeGroups = getListOfString(involvedUserInput.includeGroups);
+            List<String> excludeGroups = getListOfString(involvedUserInput.excludeGroups);
+            logger.info("InvolvedUserFunction: FilterTaskId [{}] IncludeUsers[{}] ExcludeUsers[{}] includeGroups[{}] excludeGroups[{}]",
+                    filterTaskId,
+                    includeUsers,
+                    excludeUsers,
+                    includeGroups,
+                    excludeGroups);
 
             // 1) search every active (CREATED) user task of this process instance
             // ASSUMPTION: "active" is interpreted as UserTaskState.CREATED (the state a user task has
@@ -126,63 +136,92 @@ public class InvolvedUserFunction implements OutboundConnectorFunction, CherryCo
                 List<String> candidateUsers = userTask.getCandidateUsers();
                 List<String> candidateGroups = userTask.getCandidateGroups();
 
-                // one assignee : don't need to go over
+                User assigneeUser = null;
+                Set<String> involvedUsersName = new HashSet<>();
+                Set<String> involvedGroupsName = new HashSet<>();
+                boolean excludeUsersOperation = true;
+                //-----------------------------  one assignee : don't need to go over candidates/groups below
                 if (assignee != null && assignee.length() > 0) {
-                    User assigneeUser = fetchUser(assignee, cacheUsers, involvedUserInput.getFailIfError());
-                    output.addTask(userTask, assigneeUser, addUsersAllTasks);
-                    continue;
-                }
+                    involvedUsersName.add(assignee);
 
-                // merge all information
-                Set<String> involvedUserName = new LinkedHashSet<>();
-                if (candidateUsers != null) {
-                    involvedUserName.addAll(candidateUsers);
+                    // Don't use the exclude user: the assigne has the priority.
+                    excludeUsersOperation = false;
                 }
-                if (candidateGroups != null) {
-                    for (String group : candidateGroups) {
-                        List<String> members = groupMembersCache.computeIfAbsent(group,
-                                g -> searchGroupMembers(g, involvedUserInput.getFailIfError(), involvedUserInput.getMaxUsersReported()));
-                        involvedUserName.addAll(members);
+                // ----------------- special case: no assignee, no candidateUsers or candidateGroups everybody!
+                else if ((candidateGroups == null || candidateGroups.isEmpty())
+                        && (candidateUsers == null || candidateUsers.isEmpty())) {
+                    if (listAllUsersNameCache.isEmpty())
+                        listAllUsersNameCache = searchAllUsers(involvedUserInput.getMaxUsersReported());
+
+
+                    involvedUsersName.addAll(listAllUsersNameCache);
+
+
+                } else {
+                    //---------------------- calculate candidate
+                    if (candidateUsers != null) {
+                        involvedUsersName.addAll(candidateUsers);
+                    }
+                    // ------------------ groups
+                    if (candidateGroups != null) {
+                        involvedGroupsName.addAll(candidateGroups);
                     }
                 }
-                if ((candidateGroups == null || candidateGroups.isEmpty())
-                        && (candidateUsers == null || candidateUsers.isEmpty())) {
-                    if (listAllUsersCache.isEmpty())
-                        listAllUsersCache = searchAllUsers(involvedUserInput.getMaxUsersReported());
-                    involvedUserName.addAll(listAllUsersCache);
+
+                // At this moment, we got the first set of involvedUsersName, involvedGroupsName
+
+                // Add all includeGroup
+                involvedGroupsName.addAll(includeGroups);
+                // Remove now the exclude group
+                involvedGroupsName.removeAll(excludeGroups);
+
+                // Add all users from groups
+                logger.info("final InvolvedGroupsName[{}]", involvedGroupsName);
+                for (String group : involvedGroupsName) {
+                    List<String> members = groupMembersCache.computeIfAbsent(group,
+                            g -> searchGroupMembers(g, involvedUserInput.getFailIfError(), involvedUserInput.getMaxUsersReported()));
+                    involvedUsersName.addAll(members);
                 }
 
+                // Now last: exclude all users
+                involvedUsersName.addAll(includeUsers);
+                if (excludeUsersOperation) {
+                    logger.info("Exclude users [{}]", excludeUsers);
+                    involvedUsersName.removeAll(excludeUsers);
+                }
 
+                // We have the list of users now
                 // Limit the number of users to report: keep only the first maxUsersReported (insertion order)
-                if (involvedUserName.size() > involvedUserInput.getMaxUsersReported()) {
-                    involvedUserName = involvedUserName.stream()
+                logger.info("Final involvedUsersName.size [{}]. Limit: [{}] . First 5 first in the list [{}]",
+                        involvedUsersName.size(),
+                        involvedUserInput.getMaxUsersReported(),
+                        involvedUsersName.stream().limit(5).toList());
+                
+                if (involvedUsersName.size() > involvedUserInput.getMaxUsersReported()) {
+                    involvedUsersName = involvedUsersName.stream()
                             .limit(involvedUserInput.getMaxUsersReported())
                             .collect(Collectors.toCollection(LinkedHashSet::new));
                 }
-                // Now fetch all the record for all users
+
                 List<User> involvedUsersList = new ArrayList<>();
-                for (String userId : involvedUserName) {
+                for (String userId : involvedUsersName) {
                     User user = fetchUser(userId, cacheUsers, involvedUserInput.getFailIfError());
                     if (user != null) {
                         involvedUsersList.add(user);
                     }
                 }
 
-                // Add the user from the list - it's acceptable here to be more than the limit because we want these users
-                for (User user : addUsersAllTasks) {
-                    if (involvedUsersList.stream().noneMatch(u -> u.getUsername().equals(user.getUsername()))) {
-                        involvedUsersList.add(user);
-                    }
-                }
 
-                output.addTask(userTask, null, involvedUsersList);
+                output.addTask(userTask, assigneeUser, involvedUsersList);
             }
 
             logger.info("InvolvedUserFunction End in {} ms, {} task(s)", System.currentTimeMillis() - beginTime, output.getDetailTaskInvolvedUsers().size());
             return output;
-        } catch (ConnectorException ce) {
+        } catch (
+                ConnectorException ce) {
             throw ce;
-        } catch (Exception e) {
+        } catch (
+                Exception e) {
             logger.error("Error during InvolvedUserFunction execution", e);
             throw new ConnectorException(InvolvedUserError.ERROR_DURING_OPERATION, InvolvedUserError.ERROR_DURING_OPERATION_EXPLANATION + " [" + e.getMessage() + "]");
         }
@@ -267,7 +306,7 @@ public class InvolvedUserFunction implements OutboundConnectorFunction, CherryCo
         } catch (Exception e) {
 
             Integer httpCode = e instanceof ClientHttpException clientHttpException ? clientHttpException.code() : null;
-            if (httpCode !=null && httpCode.intValue() == 403) {
+            if (httpCode != null && httpCode.intValue() == 403) {
                 // SaaS or OIDC env, it's expected to not be allow to get the user details
                 logger.info("Code 403 on FetchUser: OIDC (SaaS or other) Can't fetch user [{}] : {}, so create a shadow user", userId);
                 return getShadowUser(userId, cacheUsers);
@@ -302,33 +341,30 @@ public class InvolvedUserFunction implements OutboundConnectorFunction, CherryCo
                 }
             }
         }
-        logger.info("FilterTask[{}]", filterTaskId);
-
         return filterTaskId;
     }
 
 
-    private List<User> getInputAddUser(InvolvedUserInput involvedUserInput, Map<String, User> cacheUsers) throws
-            ConnectorException {
-        List<User> addUsersAllTasks = new ArrayList<>();
-
-        Object addUsers = involvedUserInput.getAddUsers();
-        if (addUsers instanceof List addUserList) {
-            for (Object userName : addUserList) {
-                User user = fetchUser(userName.toString(), cacheUsers, involvedUserInput.getFailIfError());
-                addUsersAllTasks.add(user);
-            }
+    /**
+     * THe input maybe a List (from a FEEL expression) or a string with , to serate name
+     *
+     * @param value the value to decode
+     * @return a listofstring
+     */
+    private List<String> getListOfString(Object value) {
+        if (value instanceof List valueList) {
+            return valueList;
         }
-        if (addUsers instanceof String addUserString) {
-            StringTokenizer st = new StringTokenizer(addUserString, ",");
+        if (value instanceof String valueString) {
+            List<String> listOfStrings = new ArrayList<>();
+
+            StringTokenizer st = new StringTokenizer(valueString, ",");
             while (st.hasMoreTokens()) {
-                User user = fetchUser(st.nextToken(), cacheUsers, involvedUserInput.getFailIfError());
-                addUsersAllTasks.add(user);
+                listOfStrings.add(st.nextToken());
             }
+            return listOfStrings;
         }
-        logger.info("addUsersAllTasks[{}]", addUsersAllTasks);
-
-        return addUsersAllTasks;
+        return Collections.emptyList();
     }
 
     @Override

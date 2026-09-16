@@ -50,26 +50,62 @@ public class InvolvedUserInput implements CherryInput {
             .setDefaultValue("100")
             .setVisibleInTemplate();
 
-    public static final String ADD_USERS = "addUsers";
+    public static final String INCLUDE_USERS = "includeUsers";
 
-    public static final RunnerParameter parameterAddUsers = new RunnerParameter(
-            InvolvedUserInput.ADD_USERS, // name
-            "Add users", // label
+    public static final RunnerParameter parameterIncludeUsers = new RunnerParameter(
+            InvolvedUserInput.INCLUDE_USERS, // name
+            "Include users", // label
             Object.class, // class
             RunnerParameter.Level.OPTIONAL, // level
             "Add user in the involved list on each task. Input is a String of UserName, separate by comma, or a List of UserName (String)")
+            .setVisibleInTemplate();
+
+    public static final String INCLUDE_GROUPS = "includeGroups";
+
+    public static final RunnerParameter parameterIncludeGroups = new RunnerParameter(
+            InvolvedUserInput.INCLUDE_GROUPS, // name
+            "Include groups", // label
+            Object.class, // class
+            RunnerParameter.Level.OPTIONAL, // level
+            "Add every member of these groups in the involved list on each task. Input is a String of GroupId, separate by comma, or a List of GroupId (String)")
+            .setVisibleInTemplate();
+
+    public static final String EXCLUDE_GROUPS = "excludeGroups";
+
+    public static final RunnerParameter parameterExcludeGroups = new RunnerParameter(
+            InvolvedUserInput.EXCLUDE_GROUPS, // name
+            "Exclude groups", // label
+            Object.class, // class
+            RunnerParameter.Level.OPTIONAL, // level
+            "Candidate groups to ignore when computing the involved users. Input is a String of GroupId, separate by comma, or a List of GroupId (String)")
+            .setVisibleInTemplate();
+
+    public static final String EXCLUDE_USERS = "excludeUsers";
+
+    public static final RunnerParameter parameterExcludeUsers = new RunnerParameter(
+            InvolvedUserInput.EXCLUDE_USERS, // name
+            "Exclude users", // label
+            Object.class, // class
+            RunnerParameter.Level.OPTIONAL, // level
+            "Users to ignore when computing the involved users (assignee, candidate users, members of candidate groups). Input is a String of UserName, separate by comma, or a List of UserName (String)")
             .setVisibleInTemplate();
 
     public static final List<RunnerParameter> allParameters = List.of(
             parameterFilterTask,
             parameterFailifError,
             parameterMaxUsersReported,
-            parameterAddUsers);
+            parameterIncludeUsers,
+            parameterExcludeUsers,
+            parameterIncludeGroups,
+            parameterExcludeGroups);
 
     public List<String> filterTask;
     public Boolean failIfError = true;
     public Integer maxUsersReported = 100;
-    public Object addUsers;
+    public Object includeUsers;
+    public Object includeGroups;
+    public Object excludeGroups;
+    public Object excludeUsers;
 
     public Object getFilterTask() {
         return filterTask;
@@ -83,8 +119,20 @@ public class InvolvedUserInput implements CherryInput {
         return maxUsersReported;
     }
 
-    public Object getAddUsers() {
-        return addUsers;
+    public Object getIncludeUsers() {
+        return includeUsers;
+    }
+
+    public Object getIncludeGroups() {
+        return includeGroups;
+    }
+
+    public Object getExcludeGroups() {
+        return excludeGroups;
+    }
+
+    public Object getExcludeUsers() {
+        return excludeUsers;
     }
 
     @Override

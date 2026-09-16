@@ -9,6 +9,7 @@ public class ElementTemplateGenerator {
 
     public static void generate() {
         try {
+            logger.info("Generating ElementTemplate");
             RunnerDecorationTemplate runnerDecorationTemplate = new RunnerDecorationTemplate(new InvolvedUserFunction());
             runnerDecorationTemplate.generateElementTemplate("./element-templates/", "involveduser-function.json");
         } catch (Exception e) {
