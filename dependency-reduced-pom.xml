@@ -10,7 +10,7 @@
   <groupId>org.camunda.connector</groupId>
   <artifactId>connector-involved-users</artifactId>
   <name>InvolvedUser</name>
-  <version>1.1.1</version>
+  <version>2.0.0</version>
   <description>Involved User Connector</description>
   <url>https://github.com/camunda-community-hub/camunda-8-connector-involvedusers</url>
   <scm>
