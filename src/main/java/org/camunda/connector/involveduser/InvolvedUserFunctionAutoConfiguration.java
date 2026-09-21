@@ -1,6 +1,7 @@
 package org.camunda.connector.involveduser;
 
 import io.camunda.client.CamundaClient;
+import io.camunda.client.spring.properties.CamundaClientProperties;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.lang.Nullable;
@@ -22,7 +23,8 @@ import org.springframework.lang.Nullable;
 public class InvolvedUserFunctionAutoConfiguration {
 
     @Bean
-    public InvolvedUserFunction involvedUserFunction(@Nullable CamundaClient camundaClient) {
-        return new InvolvedUserFunction(camundaClient);
+    public InvolvedUserFunction involvedUserFunction(@Nullable CamundaClient camundaClient,
+                                                     @Nullable CamundaClientProperties camundaClientProperties) {
+        return new InvolvedUserFunction(camundaClient, camundaClientProperties);
     }
 }

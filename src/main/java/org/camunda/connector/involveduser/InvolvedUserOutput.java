@@ -30,34 +30,31 @@ import java.util.*;
  * </pre>
  */
 public class InvolvedUserOutput implements CherryOutput {
-    private final Logger logger = LoggerFactory.getLogger(InvolvedUserOutput.class.getName());
-
     public static final String OUTPUT_DETAIL_TASK_INVOLVED_USERS = "detailTaskInvolvedUsers";
     public static final String OUTPUT_INVOLVED_USERS = "involvedUsers";
-
-
     public static final RunnerParameter parameterDetailTaskInvolvedUsers = new RunnerParameter(OUTPUT_DETAIL_TASK_INVOLVED_USERS, // name
             "Detail task involved users", // label
             Map.class, // class
             RunnerParameter.Level.OPTIONAL, "Map, keyed by task id, of the task information (taskName, dueDate, documentation) and the list of involved users (assignee, candidate users, members of candidate groups)");
-
     public static final RunnerParameter parameterInvolvedUsers = new RunnerParameter(OUTPUT_INVOLVED_USERS, // name
             "list of involved users", // label
             List.class, // class
             RunnerParameter.Level.OPTIONAL, "list of User, all task included");
-
-    public static final List<RunnerParameter> allParameters = List.of(parameterInvolvedUsers,parameterDetailTaskInvolvedUsers);
-
+    public static final List<RunnerParameter> allParameters = List.of(parameterInvolvedUsers, parameterDetailTaskInvolvedUsers);
     // Fields of one task record
     public static final String FIELD_TASK_ID = "taskId";
     public static final String FIELD_TASK_NAME = "taskName";
+    public static final String FIELD_URL_TASK = "urlTask";
     public static final String FIELD_DUE_DATE = "dueDate";
     public static final String FIELD_CREATION_DATE = "creationDate";
     public static final String FIELD_COMPLETION_DATE = "completionDate";
     public static final String FIELD_TASK_KEY = "taskKey";
     public static final String FIELD_ASSIGNEE_USER = "assigneeUser";
-    public static final String FIELD_INVOLVED_USERS = "candidateUsers";
-
+    public static final String FIELD_INVOLVED_USERS = "involvedUsers";
+    public static final String FIELD_CANDIDATE_USERS = "candidateUsers";
+    public static final String FIELD_CANDIDATE_GROUPS = "candidateGroups";
+    public static final String FIELD_CANDIDATE_INVOLVED_GROUPS = "involvedGroups";
+    private final Logger logger = LoggerFactory.getLogger(InvolvedUserOutput.class.getName());
     /**
      * Map<taskId, TaskInvolvedUsers>
      */
@@ -73,16 +70,20 @@ public class InvolvedUserOutput implements CherryOutput {
         return involvedUsers;
     }
 
-    public void addTask(UserTask userTask, User assignee, List<User> involvedUsersList) {
+    public void addTask(UserTask userTask, String urlTask, User assignee, List<User> involvedUsersList, List<String> candidateUsers, List<String> candidateGroups, List<String> involvedGroups) {
         // The task may be an iterate task: it may already exist
 
         Map<String, Object> taskRecord = new HashMap<>();
         taskRecord.put(FIELD_TASK_ID, userTask.getElementId());
         taskRecord.put(FIELD_TASK_NAME, userTask.getName());
+        taskRecord.put(FIELD_URL_TASK, urlTask);
         taskRecord.put(FIELD_DUE_DATE, userTask.getDueDate());
         taskRecord.put(FIELD_CREATION_DATE, userTask.getCreationDate());
         taskRecord.put(FIELD_COMPLETION_DATE, userTask.getCompletionDate());
         taskRecord.put(FIELD_TASK_KEY, userTask.getUserTaskKey());
+        taskRecord.put(FIELD_CANDIDATE_USERS, candidateUsers);
+        taskRecord.put(FIELD_CANDIDATE_GROUPS, candidateGroups);
+        taskRecord.put(FIELD_CANDIDATE_INVOLVED_GROUPS, involvedGroups);
 
         if (assignee != null) {
             taskRecord.put(FIELD_ASSIGNEE_USER, assignee);
@@ -107,14 +108,6 @@ public class InvolvedUserOutput implements CherryOutput {
             }
         }
 
-        logger.info("Task[{}] TaskName[{}], assignee[{}] involvedUser[{}]",
-                userTask.getElementId(),
-                userTask.getName(),
-                assignee == null ? null : assignee.getUsername() + "(" + assignee.getEmail() + ")",
-                involvedUsersList == null ? Collections.emptyList() : involvedUsersList.stream()
-                        .map(t -> t.getUsername() + "(" + t.getEmail() + ")")
-                        .limit(5)
-                        .toList());
 
     }
 

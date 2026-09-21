@@ -8,6 +8,7 @@ import io.camunda.client.api.search.response.SearchResponse;
 import io.camunda.client.api.search.response.User;
 import io.camunda.client.api.search.response.UserTask;
 import io.camunda.client.impl.search.response.UserImpl;
+import io.camunda.client.spring.properties.CamundaClientProperties;
 import io.camunda.connector.api.annotation.OutboundConnector;
 import io.camunda.connector.api.error.ConnectorException;
 import io.camunda.connector.api.outbound.OutboundConnectorContext;
@@ -35,6 +36,7 @@ import java.util.stream.Collectors;
         InvolvedUserInput.EXCLUDE_USERS,
         InvolvedUserInput.MAX_USERS_REPORTED,
         InvolvedUserInput.FAIL_IF_ERROR,
+        InvolvedUserInput.HTTP_TASK_LIST,
 }, type = "c-involveduser-function")
 public class InvolvedUserFunction implements OutboundConnectorFunction, CherryConnector {
 
@@ -58,12 +60,25 @@ public class InvolvedUserFunction implements OutboundConnectorFunction, CherryCo
     @Nullable
     private final CamundaClient camundaClient;
 
+    // Spring bean auto-configured by camunda-spring-boot-starter, exposing the "camunda.client.*"
+    // configuration this connector was started with - in particular getMode() (self-managed vs saas)
+    // and getCloud().getRegion()/getClusterId(), used by calculateTaskListUrl() to detect a SaaS
+    // connection and derive its Tasklist URL without needing to parse the REST address.
+    @Nullable
+    private final CamundaClientProperties camundaClientProperties;
+
     public InvolvedUserFunction() {
-        this(null);
+        this(null, null);
     }
 
     public InvolvedUserFunction(@Nullable CamundaClient camundaClient) {
+        this(camundaClient, null);
+    }
+
+    public InvolvedUserFunction(@Nullable CamundaClient camundaClient,
+                                @Nullable CamundaClientProperties camundaClientProperties) {
         this.camundaClient = camundaClient;
+        this.camundaClientProperties = camundaClientProperties;
     }
 
     @Override
@@ -99,10 +114,10 @@ public class InvolvedUserFunction implements OutboundConnectorFunction, CherryCo
 
 
             List<String> filterTaskId = getInputFilterTask(involvedUserInput);
-            List<String> includeUsers = getListOfString(involvedUserInput.includeUsers);
-            List<String> excludeUsers = getListOfString(involvedUserInput.excludeUsers);
-            List<String> includeGroups = getListOfString(involvedUserInput.includeGroups);
-            List<String> excludeGroups = getListOfString(involvedUserInput.excludeGroups);
+            List<String> includeUsers = getListOfString(involvedUserInput.getIncludeUsers());
+            List<String> excludeUsers = getListOfString(involvedUserInput.getExcludeUsers());
+            List<String> includeGroups = getListOfString(involvedUserInput.getIncludeGroups());
+            List<String> excludeGroups = getListOfString(involvedUserInput.getExcludeGroups());
             logger.info("InvolvedUserFunction: FilterTaskId [{}] IncludeUsers[{}] ExcludeUsers[{}] includeGroups[{}] excludeGroups[{}]",
                     filterTaskId,
                     includeUsers,
@@ -176,7 +191,7 @@ public class InvolvedUserFunction implements OutboundConnectorFunction, CherryCo
                 involvedGroupsName.removeAll(excludeGroups);
 
                 // Add all users from groups
-                logger.info("final InvolvedGroupsName[{}]", involvedGroupsName);
+                logger.info("InvolvedUserFunction: final InvolvedGroupsName[{}]", involvedGroupsName);
                 for (String group : involvedGroupsName) {
                     List<String> members = groupMembersCache.computeIfAbsent(group,
                             g -> searchGroupMembers(g, involvedUserInput.getFailIfError(), involvedUserInput.getMaxUsersReported()));
@@ -186,17 +201,17 @@ public class InvolvedUserFunction implements OutboundConnectorFunction, CherryCo
                 // Now last: exclude all users
                 involvedUsersName.addAll(includeUsers);
                 if (excludeUsersOperation) {
-                    logger.info("Exclude users [{}]", excludeUsers);
+                    logger.info("InvolvedUserFunction: Exclude users [{}]", excludeUsers);
                     involvedUsersName.removeAll(excludeUsers);
                 }
 
                 // We have the list of users now
                 // Limit the number of users to report: keep only the first maxUsersReported (insertion order)
-                logger.info("Final involvedUsersName.size [{}]. Limit: [{}] . First 5 first in the list [{}]",
+                logger.info("InvolvedUserFunction. Final involvedUsersName.size [{}]. Limit: [{}] . First 5 first in the list [{}]",
                         involvedUsersName.size(),
                         involvedUserInput.getMaxUsersReported(),
                         involvedUsersName.stream().limit(5).toList());
-                
+
                 if (involvedUsersName.size() > involvedUserInput.getMaxUsersReported()) {
                     involvedUsersName = involvedUsersName.stream()
                             .limit(involvedUserInput.getMaxUsersReported())
@@ -211,8 +226,15 @@ public class InvolvedUserFunction implements OutboundConnectorFunction, CherryCo
                     }
                 }
 
-
-                output.addTask(userTask, assigneeUser, involvedUsersList);
+                String urlTask = calculateTaskListUrl(userTask, involvedUserInput);
+                logger.info("InvolvedUserFunction; Task Name[{}] Key[{}] involvedUserList (limited) {} candidatesUsers[{}] candidateGroups[{}] involvedGroupName[{}]",
+                        userTask.getName(),
+                        userTask.getUserTaskKey(),
+                        involvedUsersName.stream().limit(5).toList(),
+                        candidateUsers == null ? "null" : candidateUsers,
+                        candidateGroups == null ? "null" : candidateGroups,
+                        involvedGroupsName == null ? "null" : involvedGroupsName);
+                output.addTask(userTask, urlTask, assigneeUser, involvedUsersList, candidateUsers, candidateGroups, involvedGroupsName.stream().toList());
             }
 
             logger.info("InvolvedUserFunction End in {} ms, {} task(s)", System.currentTimeMillis() - beginTime, output.getDetailTaskInvolvedUsers().size());
@@ -237,7 +259,7 @@ public class InvolvedUserFunction implements OutboundConnectorFunction, CherryCo
                     .items();
             return groupUsers.stream().map(GroupUser::getUsername).limit(maxUsersReported).toList();
         } catch (Exception e) {
-            logger.error("Can't resolve members of group [{}] : {}", groupId, e.getMessage());
+            logger.error("InvolvedUserFunction: Can't resolve members of group [{}] : {}", groupId, e.getMessage());
             if (failIfError) {
                 throw new ConnectorException(InvolvedUserError.CANT_FETCH_GROUP, "GroupId[" + groupId + "] errors :" + e.getMessage());
             }
@@ -287,6 +309,39 @@ public class InvolvedUserFunction implements OutboundConnectorFunction, CherryCo
     }
 
     /**
+     * Builds the base URL used to deep-link to a user task in Tasklist, following the
+     * "{tasklist-url}/tasklist/{userTaskKey}" pattern documented at
+     * https://docs.camunda.io/docs/components/camunda-integrations/ms-teams/ms-teams-installation/#example-configuration-file
+     * <p>
+     * On Camunda 8 SaaS, the Tasklist base URL (e.g. https://jfk-1.api.camunda.io/f9329610-bb97-4ae4-b666-45664111fc66)
+     * is calculated automatically from CamundaClientProperties.getMode()/getCloud() - the same Spring
+     * bean that camunda-spring-boot-starter itself binds "camunda.client.*" onto - no input needed.
+     * On a Self-Managed cluster there is no such convention to derive it from, so the "httpTaskList"
+     * input is used instead.
+     */
+    private String calculateTaskListUrl(UserTask userTask, InvolvedUserInput involvedUserInput) {
+        String headerTask = "";
+
+        boolean isSaas = camundaClientProperties != null
+                && camundaClientProperties.getMode() == CamundaClientProperties.ClientMode.saas
+                && camundaClientProperties.getCloud() != null;
+
+        if (isSaas) {
+            String region = camundaClientProperties.getCloud().getRegion();
+            String clusterId = camundaClientProperties.getCloud().getClusterId();
+            headerTask = "https://" + region + ".api.camunda.io/" + clusterId;
+        } else if (involvedUserInput.getHttpTaskList() != null && !involvedUserInput.getHttpTaskList().isBlank()) {
+            // Self-Managed: use the input as-is (trim a trailing slash to avoid a double "//tasklist").
+            headerTask = involvedUserInput.getHttpTaskList().trim();
+            if (headerTask.endsWith("/")) {
+                headerTask = headerTask.substring(0, headerTask.length() - 1);
+            }
+        }
+
+        return headerTask + "/tasklist/" + userTask.getUserTaskKey() + "?filter=all-open";
+    }
+
+    /**
      * Fetch the User (userId, name, email) for one userId, from the CamundaClient user API.
      * When the user can't be found and failIfError is false, a "shadow" User is built instead of
      * failing: this happens in particular when the cluster runs in OIDC mode, where the native
@@ -308,15 +363,15 @@ public class InvolvedUserFunction implements OutboundConnectorFunction, CherryCo
             Integer httpCode = e instanceof ClientHttpException clientHttpException ? clientHttpException.code() : null;
             if (httpCode != null && httpCode.intValue() == 403) {
                 // SaaS or OIDC env, it's expected to not be allow to get the user details
-                logger.info("Code 403 on FetchUser: OIDC (SaaS or other) Can't fetch user [{}] : {}, so create a shadow user", userId);
+                logger.info("InvolvedUserFunction: Code 403 on FetchUser: OIDC (SaaS or other) Can't fetch user [{}] : {}, so create a shadow user", userId);
                 return getShadowUser(userId, cacheUsers);
             }
 
             if (failIfError) {
-                logger.error("Can't fetch user [{}] : {}", userId, e.getMessage());
+                logger.error("InvolvedUserFunction: Can't fetch user [{}] : {}", userId, e.getMessage());
                 throw new ConnectorException(InvolvedUserError.CANT_FETCH_USER, "UserId[" + userId + "] errors :" + e.getMessage());
             }
-            logger.info("Can't fetch user [{}] : {}, so create a shadow user", userId, e.getMessage());
+            logger.info("InvolvedUserFunction: Can't fetch user [{}] : {}, so create a shadow user", userId, e.getMessage());
             return getShadowUser(userId, cacheUsers);
         }
     }
@@ -360,7 +415,7 @@ public class InvolvedUserFunction implements OutboundConnectorFunction, CherryCo
 
             StringTokenizer st = new StringTokenizer(valueString, ",");
             while (st.hasMoreTokens()) {
-                listOfStrings.add(st.nextToken());
+                listOfStrings.add(st.nextToken().trim());
             }
             return listOfStrings;
         }

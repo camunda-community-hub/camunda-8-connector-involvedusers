@@ -11,7 +11,9 @@
     <!-- 1.0.2 Change artefact id to connector-involvedusers -->
     <!-- 1.1.0 Move to org.camunda.connector -->
     <!-- 1.2.0 Add ExcludeGroup and IncludeGroup -->
-    <version>1.2.0</version>
+    <!-- 1.2.1 Add more output fields (involvedGroups, candidateUsers, candidateGroups) -->
+    <!-- 1.3.0 Add Url tasklist in the result -->
+    <version>1.3.0</version>
     <url>https://github.com/camunda-community-hub/camunda-8-connector-involvedusers</url>
 
     <scm>

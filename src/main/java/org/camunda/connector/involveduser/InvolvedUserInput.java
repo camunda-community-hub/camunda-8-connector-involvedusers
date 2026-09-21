@@ -90,6 +90,19 @@ public class InvolvedUserInput implements CherryInput {
             "Users to ignore when computing the involved users (assignee, candidate users, members of candidate groups). Input is a String of UserName, separate by comma, or a List of UserName (String)")
             .setVisibleInTemplate();
 
+    public static final String HTTP_TASK_LIST = "httpTaskList";
+
+    public static final RunnerParameter parameterHttpTaskList = new RunnerParameter(
+            InvolvedUserInput.HTTP_TASK_LIST, // name
+            "Tasklist base URL", // label
+            String.class, // class
+            RunnerParameter.Level.OPTIONAL, // level
+            "Base URL of your Tasklist, used to build a direct link to each user task (e.g. https://your-camunda-host/tasklist). "
+                    + "On Camunda 8 SaaS this is calculated automatically from the cluster's region and cluster id "
+                    + "(for example https://jfk-1.api.camunda.io/f9329610-bb97-4ae4-b666-45664111fc66) and this input is ignored - "
+                    + "only set it for a Self-Managed cluster, without a trailing slash.")
+            .setVisibleInTemplate();
+
     public static final List<RunnerParameter> allParameters = List.of(
             parameterFilterTask,
             parameterFailifError,
@@ -97,7 +110,8 @@ public class InvolvedUserInput implements CherryInput {
             parameterIncludeUsers,
             parameterExcludeUsers,
             parameterIncludeGroups,
-            parameterExcludeGroups);
+            parameterExcludeGroups,
+            parameterHttpTaskList);
 
     public List<String> filterTask;
     public Boolean failIfError = true;
@@ -106,6 +120,7 @@ public class InvolvedUserInput implements CherryInput {
     public Object includeGroups;
     public Object excludeGroups;
     public Object excludeUsers;
+    public String httpTaskList;
 
     public Object getFilterTask() {
         return filterTask;
@@ -133,6 +148,10 @@ public class InvolvedUserInput implements CherryInput {
 
     public Object getExcludeUsers() {
         return excludeUsers;
+    }
+
+    public String getHttpTaskList() {
+        return httpTaskList;
     }
 
     @Override
