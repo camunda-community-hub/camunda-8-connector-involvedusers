@@ -7,8 +7,8 @@
     <relativePath>pom.xml</relativePath>
   </parent>
   <modelVersion>4.0.0</modelVersion>
-  <groupId>io.camunda.connector</groupId>
-  <artifactId>connector-involvedusers</artifactId>
+  <groupId>org.camunda.connector</groupId>
+  <artifactId>connector-involved-users</artifactId>
   <name>InvolvedUser</name>
   <version>1.3.0</version>
   <description>Involved User Connector</description>
