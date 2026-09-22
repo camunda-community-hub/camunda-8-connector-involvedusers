@@ -158,6 +158,7 @@ public class InvolvedUserFunction implements OutboundConnectorFunction, CherryCo
                 //-----------------------------  one assignee : don't need to go over candidates/groups below
                 if (assignee != null && assignee.length() > 0) {
                     involvedUsersName.add(assignee);
+                    assigneeUser= fetchUser(assignee, cacheUsers, involvedUserInput.getFailIfError());
 
                     // Don't use the exclude user: the assigne has the priority.
                     excludeUsersOperation = false;
