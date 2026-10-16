@@ -1,5 +1,7 @@
 package org.camunda.connector.involveduser;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import io.camunda.client.api.search.response.User;
 import io.camunda.client.api.search.response.UserTask;
 import org.camunda.connector.cherrytemplate.CherryOutput;
@@ -111,6 +113,7 @@ public class InvolvedUserOutput implements CherryOutput {
 
     }
 
+    @JsonIgnore
     @Override
     public List<Map<String, Object>> getOutputParameters() {
         return ParameterToolbox.getOutputParameters(allParameters);
