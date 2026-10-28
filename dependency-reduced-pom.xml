@@ -10,7 +10,7 @@
   <groupId>org.camunda.connector</groupId>
   <artifactId>connector-involved-users</artifactId>
   <name>InvolvedUser</name>
-  <version>1.3.1</version>
+  <version>2.0.0</version>
   <description>Involved User Connector</description>
   <url>https://github.com/camunda-community-hub/camunda-8-connector-involvedusers</url>
   <scm>
@@ -34,7 +34,6 @@
         <artifactId>maven-shade-plugin</artifactId>
         <executions>
           <execution>
-            <id>with-dependencies</id>
             <phase>package</phase>
             <goals>
               <goal>shade</goal>
@@ -42,89 +41,6 @@
             <configuration>
               <shadedClassifierName>with-dependencies</shadedClassifierName>
               <shadedArtifactAttached>true</shadedArtifactAttached>
-              <artifactSet>
-                <excludes>
-                  <exclude>io.camunda.connector:*</exclude>
-                  <exclude>io.camunda:*</exclude>
-                  <exclude>org.camunda.feel:*</exclude>
-                  <exclude>org.camunda.bpm.model:*</exclude>
-                  <exclude>org.springframework.boot:*</exclude>
-                  <exclude>org.springframework:*</exclude>
-                  <exclude>ch.qos.logback:*</exclude>
-                  <exclude>org.apache.logging.log4j:*</exclude>
-                  <exclude>org.slf4j:*</exclude>
-                  <exclude>org.apache.tomcat.embed:*</exclude>
-                  <exclude>io.micrometer:*</exclude>
-                  <exclude>org.hdrhistogram:*</exclude>
-                  <exclude>org.latencyutils:*</exclude>
-                  <exclude>org.hibernate.validator:*</exclude>
-                  <exclude>org.jboss.logging:*</exclude>
-                  <exclude>com.fasterxml:classmate</exclude>
-                  <exclude>org.yaml:*</exclude>
-                  <exclude>io.grpc:*</exclude>
-                  <exclude>io.netty:*</exclude>
-                  <exclude>io.opencensus:*</exclude>
-                  <exclude>io.perfmark:*</exclude>
-                  <exclude>com.google.protobuf:*</exclude>
-                  <exclude>com.google.api.grpc:*</exclude>
-                  <exclude>com.google.android:*</exclude>
-                  <exclude>org.apache.httpcomponents:*</exclude>
-                  <exclude>org.apache.httpcomponents.client5:*</exclude>
-                  <exclude>org.apache.httpcomponents.core5:*</exclude>
-                  <exclude>com.google.http-client:*</exclude>
-                  <exclude>commons-codec:*</exclude>
-                  <exclude>com.fasterxml.jackson.core:*</exclude>
-                  <exclude>com.fasterxml.jackson.dataformat:*</exclude>
-                  <exclude>com.fasterxml.jackson.datatype:*</exclude>
-                  <exclude>com.fasterxml.jackson.module:*</exclude>
-                  <exclude>com.fasterxml.uuid:*</exclude>
-                  <exclude>tools.jackson.core:*</exclude>
-                  <exclude>org.scala-lang:*</exclude>
-                  <exclude>com.lihaoyi:*</exclude>
-                  <exclude>com.auth0:*</exclude>
-                  <exclude>com.github.ben-manes.caffeine:*</exclude>
-                  <exclude>com.google.code.findbugs:*</exclude>
-                  <exclude>com.google.code.gson:*</exclude>
-                  <exclude>com.google.errorprone:*</exclude>
-                  <exclude>com.google.guava:*</exclude>
-                  <exclude>com.google.j2objc:*</exclude>
-                  <exclude>com.thoughtworks.paranamer:*</exclude>
-                  <exclude>dev.failsafe:*</exclude>
-                  <exclude>jakarta.annotation:*</exclude>
-                  <exclude>jakarta.validation:*</exclude>
-                  <exclude>io.pebbletemplates:*</exclude>
-                  <exclude>net.steppschuh.markdowngenerator:*</exclude>
-                  <exclude>org.apache.commons:*</exclude>
-                  <exclude>org.bouncycastle:*</exclude>
-                  <exclude>org.checkerframework:*</exclude>
-                  <exclude>org.codehaus.mojo:animal-sniffer-annotations</exclude>
-                  <exclude>org.jspecify:*</exclude>
-                  <exclude>org.unbescape:*</exclude>
-                  <exclude>uk.co.jemos.podam:*</exclude>
-                </excludes>
-              </artifactSet>
-            </configuration>
-          </execution>
-          <execution>
-            <id>all</id>
-            <phase>package</phase>
-            <goals>
-              <goal>shade</goal>
-            </goals>
-            <configuration>
-              <shadedClassifierName>all</shadedClassifierName>
-              <shadedArtifactAttached>true</shadedArtifactAttached>
-              <filters>
-                <filter>
-                  <artifact>*:*</artifact>
-                  <excludes>
-                    <exclude>META-INF/*.SF</exclude>
-                    <exclude>META-INF/*.DSA</exclude>
-                    <exclude>META-INF/*.RSA</exclude>
-                    <exclude>META-INF/*.EC</exclude>
-                  </excludes>
-                </filter>
-              </filters>
             </configuration>
           </execution>
         </executions>
@@ -286,7 +202,7 @@
       <dependency>
         <groupId>io.camunda</groupId>
         <artifactId>camunda-bom</artifactId>
-        <version>8.9.21</version>
+        <version>8.8.0</version>
         <scope>import</scope>
       </dependency>
     </dependencies>
@@ -299,7 +215,7 @@
     <version.mockito>5.16.1</version.mockito>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <version.jackson>2.17.0</version.jackson>
-    <version.connector>8.9.12</version.connector>
+    <version.connector>8.10.0</version.connector>
     <maven.compiler.target>23</maven.compiler.target>
     <version.spring-boot>3.4.4</version.spring-boot>
     <version.slf4j>2.0.18</version.slf4j>
