@@ -58,6 +58,83 @@ this one to collect, say, every distinct task name across all tasks:
 ```
 string join(distinct values(get entries(detailTaskInvolvedUsers).value.taskName), ", ")
 ```
+Example of result
+```json
+{
+		"2251799815443401": {
+			"involvedGroups": [
+				"Supervisor",
+				"CustomerService"
+			],
+			"taskKey": 2251799815443401,
+			"dueDate": "2026-10-14T20:10:00Z",
+			"candidateUsers": [],
+			"candidateGroups": [
+				"CustomerService",
+				"Supervisor"
+			],
+			"taskName": "Review task",
+			"completionDate": null,
+			"creationDate": "2026-10-08T20:09:43.79Z",
+			"involvedUsers": [
+				{
+					"username": "dan.ragan@camunda.com",
+					"name": null,
+					"email": "dan.ragan@camunda.com"
+				},
+				{
+					"username": "rajasekaran.subburaj@camunda.com",
+					"name": null,
+					"email": "rajasekaran.subburaj@camunda.com"
+				},
+				{
+					"username": "pierre-yves.monnet@camunda.com",
+					"name": null,
+					"email": "pierre-yves.monnet@camunda.com"
+				}
+			],
+			"taskId": "ReviewTask",
+			"urlTask": "https://jfk-1.api.camunda.io/a9999999-9999-9999-9999-9999999999/tasklist/2251799815443401?filter=all-open"
+		}
+	}
+```
+
+Using the `String join` function in FEEL, you can easily get a comma-separated list of all involved users across all tasks:
+
+```
+"Hello,\n\n"
++ "Just a friendly reminder that you still have a few tasks to complete.\n"
++
+    string join(
+      for detail in get entries(involvedUser.details)
+      return
+        "Task : "
+        +
+        (
+          if detail.value.urlTask = null
+          then ""
+          else string(detail.value.urlTask)
+        )
+        +
+        "\nOwner : "
+        +
+        (
+          if detail.value.assigneeUser = null
+          then ""
+          else string(detail.value.assigneeUser.username)
+        )
+        +
+        "\nKey : "
+        +
+        (
+          if detail.value.taskKey = null
+          then ""
+          else string(detail.value.taskKey)
+        ),
+      "\n\n"
+    )
+)
+```
 
 ## How to collect users
 
